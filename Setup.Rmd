@@ -1,0 +1,558 @@
+---
+title: "Setup"
+output: html_document
+date: "2022-08-05"
+---
+
+```{r setup, include=FALSE, results='hide'}
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load("basedosdados", "tidyverse", 
+               "dbplyr", "scales", "kableExtra", "ggrepel", "bbplot")
+
+library(kableExtra)
+# aqui você define o seu projeto billing_id
+basedosdados::set_billing_id("porto-ma")
+
+
+
+```
+
+
+```{r}
+
+query <- "
+WITH 
+dicionario_tipo_vinculo AS (
+    SELECT chave AS chave_tipo_vinculo, valor AS descricao_tipo_vinculo
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'tipo_vinculo' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_vinculo_ativo_3112 AS (
+    SELECT chave AS chave_vinculo_ativo_3112, valor AS descricao_vinculo_ativo_3112
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'vinculo_ativo_3112' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_tipo_admissao AS (
+    SELECT chave AS chave_tipo_admissao, valor AS descricao_tipo_admissao
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'tipo_admissao' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_faixa_horas_contratadas AS (
+    SELECT chave AS chave_faixa_horas_contratadas, valor AS descricao_faixa_horas_contratadas
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'faixa_horas_contratadas' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_indicador_trabalho_parcial AS (
+    SELECT chave AS chave_indicador_trabalho_parcial, valor AS descricao_indicador_trabalho_parcial
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'indicador_trabalho_parcial' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_indicador_trabalho_intermitente AS (
+    SELECT chave AS chave_indicador_trabalho_intermitente, valor AS descricao_indicador_trabalho_intermitente
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'indicador_trabalho_intermitente' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_faixa_remuneracao_media_sm AS (
+    SELECT chave AS chave_faixa_remuneracao_media_sm, valor AS descricao_faixa_remuneracao_media_sm
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'faixa_remuneracao_media_sm' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_tipo_salario AS (
+    SELECT chave AS chave_tipo_salario, valor AS descricao_tipo_salario
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'tipo_salario' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_faixa_etaria AS (
+    SELECT chave AS chave_faixa_etaria, valor AS descricao_faixa_etaria
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'faixa_etaria' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_grau_instrucao_apos_2005 AS (
+    SELECT chave AS chave_grau_instrucao_apos_2005, valor AS descricao_grau_instrucao_apos_2005
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'grau_instrucao_apos_2005' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_nacionalidade AS (
+    SELECT chave AS chave_nacionalidade, valor AS descricao_nacionalidade
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'nacionalidade' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_sexo AS (
+    SELECT chave AS chave_sexo, valor AS descricao_sexo
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'sexo' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_raca_cor AS (
+    SELECT chave AS chave_raca_cor, valor AS descricao_raca_cor
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'raca_cor' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_indicador_portador_deficiencia AS (
+    SELECT chave AS chave_indicador_portador_deficiencia, valor AS descricao_indicador_portador_deficiencia
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'indicador_portador_deficiencia' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_tipo_deficiencia AS (
+    SELECT chave AS chave_tipo_deficiencia, valor AS descricao_tipo_deficiencia
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'tipo_deficiencia' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_tamanho_estabelecimento AS (
+    SELECT chave AS chave_tamanho_estabelecimento, valor AS descricao_tamanho_estabelecimento
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'tamanho_estabelecimento' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_tipo_estabelecimento AS (
+    SELECT chave AS chave_tipo_estabelecimento, valor AS descricao_tipo_estabelecimento
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'tipo_estabelecimento' AND id_tabela = 'microdados_vinculos'
+),
+dicionario_indicador_simples AS (
+    SELECT chave AS chave_indicador_simples, valor AS descricao_indicador_simples
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE nome_coluna = 'indicador_simples' AND id_tabela = 'microdados_vinculos'
+)
+
+SELECT
+    dados.ano,
+    dados.sigla_uf,
+    uf.nome AS sigla_uf_nome,
+    dados.id_municipio,
+    municipio.nome AS id_municipio_nome,
+    tipo_vinculo.descricao_tipo_vinculo AS tipo_vinculo,
+    vinculo.descricao_vinculo_ativo_3112 AS vinculo_ativo_3112,
+    tipo_admissao.descricao_tipo_admissao AS tipo_admissao,
+    dados.mes_admissao,
+    dados.faixa_tempo_emprego,
+    dados.tempo_emprego,
+    faixa_horas.descricao_faixa_horas_contratadas AS faixa_horas_contratadas,
+    dados.quantidade_horas_contratadas,
+    dados.id_municipio_trabalho,
+    municipio_trabalho.nome AS id_municipio_trabalho_nome,
+    trabalho_parcial.descricao_indicador_trabalho_parcial AS indicador_trabalho_parcial,
+    trabalho_intermitente.descricao_indicador_trabalho_intermitente AS indicador_trabalho_intermitente,
+    faixa_rem.descricao_faixa_remuneracao_media_sm AS faixa_remuneracao_media_sm,
+    dados.valor_remuneracao_media_sm,
+    dados.valor_remuneracao_media,
+    tipo_salario.descricao_tipo_salario AS tipo_salario,
+    dados.valor_salario_contratual,
+    dados.subatividade_ibge,
+    dados.subsetor_ibge,
+    dados.cbo_2002,
+    cbo2002.descricao AS cbo_2002_descricao,
+    cbo2002.descricao_familia AS cbo_2002_descricao_familia,
+    cbo2002.descricao_subgrupo AS cbo_2002_descricao_subgrupo,
+    cbo2002.descricao_subgrupo_principal AS cbo_2002_descricao_subgrupo_principal,
+    cbo2002.descricao_grande_grupo AS cbo_2002_descricao_grande_grupo,
+    dados.cnae_1,
+    cnae1.descricao AS cnae_1_descricao,
+    cnae1.descricao_grupo AS cnae_1_descricao_grupo,
+    cnae1.descricao_divisao AS cnae_1_descricao_divisao,
+    cnae1.descricao_secao AS cnae_1_descricao_secao,
+    dados.cnae_2,
+    dados.cnae_2_subclasse,
+    cnae2.descricao_subclasse AS cnae_2_subclasse_descricao_subclasse,
+    cnae2.descricao_classe AS cnae_2_subclasse_descricao_classe,
+    cnae2.descricao_grupo AS cnae_2_subclasse_descricao_grupo,
+    cnae2.descricao_divisao AS cnae_2_subclasse_descricao_divisao,
+    cnae2.descricao_secao AS cnae_2_subclasse_descricao_secao,
+    faixa_etaria.descricao_faixa_etaria AS faixa_etaria,
+    dados.idade,
+    grau_instrucao.descricao_grau_instrucao_apos_2005 AS grau_instrucao_apos_2005,
+    nacionalidade.descricao_nacionalidade AS nacionalidade,
+    sexo.descricao_sexo AS sexo,
+    raca.descricao_raca_cor AS raca_cor,
+    deficiencia.descricao_indicador_portador_deficiencia AS indicador_portador_deficiencia,
+    tipo_def.descricao_tipo_deficiencia AS tipo_deficiencia,
+    tamanho.descricao_tamanho_estabelecimento AS tamanho_estabelecimento,
+    tipo_est.descricao_tipo_estabelecimento AS tipo_estabelecimento,
+    dados.natureza_juridica,
+    njuridica.descricao AS natureza_juridica_descricao,
+    simples.descricao_indicador_simples AS indicador_simples,
+    dados.bairros_sp
+FROM `basedosdados.br_me_rais.microdados_vinculos` AS dados
+LEFT JOIN dicionario_tipo_vinculo AS tipo_vinculo ON dados.tipo_vinculo = tipo_vinculo.chave_tipo_vinculo
+LEFT JOIN dicionario_vinculo_ativo_3112 AS vinculo ON dados.vinculo_ativo_3112 = vinculo.chave_vinculo_ativo_3112
+LEFT JOIN dicionario_tipo_admissao AS tipo_admissao ON dados.tipo_admissao = tipo_admissao.chave_tipo_admissao
+LEFT JOIN dicionario_faixa_horas_contratadas AS faixa_horas ON dados.faixa_horas_contratadas = faixa_horas.chave_faixa_horas_contratadas
+LEFT JOIN dicionario_indicador_trabalho_parcial AS trabalho_parcial ON dados.indicador_trabalho_parcial = trabalho_parcial.chave_indicador_trabalho_parcial
+LEFT JOIN dicionario_indicador_trabalho_intermitente AS trabalho_intermitente ON dados.indicador_trabalho_intermitente = trabalho_intermitente.chave_indicador_trabalho_intermitente
+LEFT JOIN dicionario_faixa_remuneracao_media_sm AS faixa_rem ON dados.faixa_remuneracao_media_sm = faixa_rem.chave_faixa_remuneracao_media_sm
+LEFT JOIN dicionario_tipo_salario AS tipo_salario ON dados.tipo_salario = tipo_salario.chave_tipo_salario
+LEFT JOIN dicionario_faixa_etaria AS faixa_etaria ON dados.faixa_etaria = faixa_etaria.chave_faixa_etaria
+LEFT JOIN dicionario_grau_instrucao_apos_2005 AS grau_instrucao ON dados.grau_instrucao_apos_2005 = grau_instrucao.chave_grau_instrucao_apos_2005
+LEFT JOIN dicionario_nacionalidade AS nacionalidade ON dados.nacionalidade = nacionalidade.chave_nacionalidade
+LEFT JOIN dicionario_sexo AS sexo ON dados.sexo = sexo.chave_sexo
+LEFT JOIN dicionario_raca_cor AS raca ON dados.raca_cor = raca.chave_raca_cor
+LEFT JOIN dicionario_indicador_portador_deficiencia AS deficiencia ON dados.indicador_portador_deficiencia = deficiencia.chave_indicador_portador_deficiencia
+LEFT JOIN dicionario_tipo_deficiencia AS tipo_def ON dados.tipo_deficiencia = tipo_def.chave_tipo_deficiencia
+LEFT JOIN dicionario_tamanho_estabelecimento AS tamanho ON dados.tamanho_estabelecimento = tamanho.chave_tamanho_estabelecimento
+LEFT JOIN dicionario_tipo_estabelecimento AS tipo_est ON dados.tipo_estabelecimento = tipo_est.chave_tipo_estabelecimento
+LEFT JOIN (SELECT DISTINCT id_municipio, nome FROM `basedosdados.br_bd_diretorios_brasil.municipio`) AS municipio ON dados.id_municipio = municipio.id_municipio
+LEFT JOIN (SELECT DISTINCT id_municipio, nome FROM `basedosdados.br_bd_diretorios_brasil.municipio`) AS municipio_trabalho ON dados.id_municipio_trabalho = municipio_trabalho.id_municipio
+LEFT JOIN (SELECT DISTINCT sigla, nome FROM `basedosdados.br_bd_diretorios_brasil.uf`) AS uf ON dados.sigla_uf = uf.sigla
+LEFT JOIN (SELECT DISTINCT cbo_2002, descricao, descricao_familia, descricao_subgrupo, descricao_subgrupo_principal, descricao_grande_grupo FROM `basedosdados.br_bd_diretorios_brasil.cbo_2002`) AS cbo2002 ON dados.cbo_2002 = cbo2002.cbo_2002
+LEFT JOIN (SELECT DISTINCT cnae_1, descricao, descricao_grupo, descricao_divisao, descricao_secao FROM `basedosdados.br_bd_diretorios_brasil.cnae_1`) AS cnae1 ON dados.cnae_1 = cnae1.cnae_1
+LEFT JOIN (SELECT DISTINCT subclasse, descricao_subclasse, descricao_classe, descricao_grupo, descricao_divisao, descricao_secao FROM `basedosdados.br_bd_diretorios_brasil.cnae_2`) AS cnae2 ON dados.cnae_2_subclasse = cnae2.subclasse
+LEFT JOIN (SELECT DISTINCT id_natureza_juridica, descricao FROM `basedosdados.br_bd_diretorios_brasil.natureza_juridica`) AS njuridica ON dados.natureza_juridica = njuridica.id_natureza_juridica
+LEFT JOIN dicionario_indicador_simples AS simples ON dados.indicador_simples = simples.chave_indicador_simples
+WHERE dados.sigla_uf = 'SP'
+  AND dados.id_municipio IN ('3548500','3513504','3518701')
+  AND dados.ano BETWEEN 2020 AND 2025
+  AND dados.vinculo_ativo_3112 = '1'
+  AND dados.cnae_2_subclasse IN (
+          '5011401', '5011402', 
+          '5012201', '5012202', 
+          '5021101', '5021102', 
+          '5022001', '5022002', 
+          '5030101', '5030102', '5030103', 
+          '5091201', '5091202', 
+          '5099801', '5099899', 
+          '5231101', '5231102', '5231103', 
+          '5232000', 
+          '5239701', '5239799'
+  )
+  "
+
+
+
+```
+
+
+```{r}
+rais <- read_sql(query, billing_project_id = "porto-ma")
+
+# lendo o dicionário dos dados da rais da base dos dados
+dic <- read_sql(query, billing_project_id = "porto-ma")
+
+
+# dir.create("dados")
+
+# criando os arquivos csv
+write_csv(rais, file = "dados/rais.csv")
+write_csv(dic, file = "dados/dicionario.csv")
+```
+```
+
+
+```{r importando_arquivos, context="data", include=FALSE}
+#lendo os dados da rais
+rais <- read_csv(file = "dados/rais.csv",
+                 col_type = list(.default = "f",
+                                 valor_remuneracao_media = "d",
+                                 ano = "i"))
+
+#lendo o dicionário dos dados da rais
+dic <- read_csv(file = "dados/dicionario.csv",
+                 col_type = list(.default = "f"))
+
+#lendo arquivo da cbo 2002
+cbo <- read_delim(file = 'dados/cbo2002.csv', delim = ";",
+                col_type = list(.default = "f"),
+                locale = locale(encoding = "latin1"))
+
+#lendo dados dos municípios 
+municipios <- readxl::read_xls(
+  'dados/municipios_ibge.xls',
+  col_names = c("cod_uf", "nome_uf", 
+                "cod_rg_intermedia", "nome_rg_intermediaria",
+                "cod_rg_imediata", "nome_rg_imediata", 
+                "cod_mesorregiao", "nome_mesorregiao", 
+                "cod_microrregiao", "nome_microrregiao",
+                "cod_municipio", "cod_municipio_completo", "nome_municipio"),
+  skip = 1)
+
+#lendo dados das subclasses da cnae
+subclasses <- readxl::read_xls(
+  "dados/cnae_subclasse.xls",
+  col_names = c("secao", "divisao", "grupo", 
+                "classe", "subclasse", "denominacao"),
+  skip = 5
+)
+
+```
+
+```{r limpando_subclasse, context="data", include=FALSE}
+
+#definindo vetor de letras maiúsculas
+letras <- LETTERS[seq(1, 26)]
+
+# filtrando a coluna secao pelas letras que identificão as seções
+# e por linhas que possuam valores NA
+#isso buscar retirar os cabeçalhos do arquivos cnae_subclasse.xls
+subclasses <- 
+subclasses %>% 
+  filter(secao %in% letras | is.na(secao))
+
+# selecionando APENAS as seções da cnae
+secao <- 
+  subclasses %>% 
+  filter(!is.na(secao)) %>% 
+  select(secao, denominacao) %>% 
+  rename(n_secao = denominacao)
+
+# selecionando APENAS as divisões da cnae
+divisao <- 
+  subclasses %>% 
+  filter(!is.na(divisao)) %>% 
+  select(divisao, denominacao) %>% 
+  rename(n_divisao = denominacao)
+
+# selecionando APENAS as grupos da cnae
+grupo <- 
+  subclasses %>% 
+  filter(!is.na(grupo)) %>% 
+  select(grupo, denominacao) %>% 
+  rename(n_grupo = denominacao)
+
+# selecionando APENAS as classes da cnae
+classe <- 
+  subclasses %>% 
+  filter(!is.na(classe)) %>% 
+  select(classe, denominacao) %>% 
+  rename(n_classe = denominacao)
+
+
+# autocompletando as colunas para baixo
+subclasses <- 
+subclasses %>% 
+  fill(secao:classe, .direction = "down")
+
+# filtrando tudo aquilo que não é NA coluna subclasse
+#tabela limpa
+subclasses <- 
+subclasses %>% 
+  filter(!is.na(subclasse))
+
+#renomeando a coluna denominacao
+subclasses <- 
+subclasses %>% 
+  rename(n_subclasse = denominacao)
+
+################## Fazendo o join #################
+#da tabela secao com a tabela subclasses
+subclasses  <- 
+  left_join(subclasses, #primeira tabela
+          secao, #segunda tabela
+          by = "secao")
+
+#da tabela divisao com a tabela subclasses
+subclasses  <- 
+  left_join(subclasses, #primeira tabela
+          divisao, #segunda tabela
+          by = "divisao")
+
+#da tabela grupo com a tabela subclasses
+subclasses  <- 
+  left_join(subclasses, #primeira tabela
+          grupo, #segunda tabela
+          by = "grupo")
+
+#da tabela classe com a tabela subclasses
+subclasses  <- 
+  left_join(subclasses, #primeira tabela
+          classe, #segunda tabela
+          by = "classe")
+
+# substituindo todas as pontuações por nada das colunas
+#grupo, classe, subclasse
+subclasses <-
+subclasses %>% 
+  mutate_at(.vars = vars("grupo", "classe", "subclasse"), .funs = ~str_replace_all(., "[:punct:]", ""))
+
+#alteradno o tipo de todas as colunas para fator
+subclasses <- subclasses %>% 
+     dplyr::mutate(across(everything(), as.factor))
+```
+
+```{r limpando, context="data", include=FALSE}
+#alterando o tipo de todas as colunas da tabela municipio para fator
+municipios <- 
+  municipios |>   
+      dplyr::mutate(across(everything(), as.factor))
+
+# substituindo o valor 517235 por 517335 da coluna CODIGO da tabela cbo
+cbo <- 
+cbo %>% mutate(
+  CODIGO = as.character(CODIGO),
+  CODIGO = if_else(CODIGO == "517235", "517335", CODIGO),
+  CODIGO = as.factor(CODIGO))
+
+```
+
+```{r joins_niveis, include=FALSE}
+
+#alterando levels das variáveis
+
+#juntando as tabelas rais e municipios
+rais <- 
+  left_join(rais, #primeira tabela
+          municipios, #segunda tabela
+          by = c("id_municipio" = "cod_municipio_completo")) %>% 
+  select(!id_municipio & !starts_with("cod_"))
+
+#da variáveil sexo
+rais <- 
+  left_join(rais, #primeira tabela
+          dic %>% #segunda tabela
+            filter(nome_coluna == "sexo") %>% 
+            select(c("chave", "valor")),
+          by = c("sexo" = "chave")) %>% 
+  mutate(sexo = valor) %>% #substituindo sexo
+  select(!valor)
+          
+rais <- 
+rais %>% 
+  mutate(
+    grau_instrucao_apos_2005 = factor( 
+        case_when( 
+          grau_instrucao_apos_2005 %in% 1:4 ~ "Fundamental incompleto", 
+          grau_instrucao_apos_2005 == 5 ~ "Fundamental completo", 
+          grau_instrucao_apos_2005 == 6 ~ "Médio incompleto", 
+          grau_instrucao_apos_2005 == 7 ~ "Médio completo",
+          grau_instrucao_apos_2005 == 8 ~ "Superior incompleto", 
+          grau_instrucao_apos_2005 == 9 ~ "Superior completo", 
+          grau_instrucao_apos_2005 == 10 ~ "Pós-graduação", 
+          grau_instrucao_apos_2005 == 11 ~ "Doutorado", 
+          grau_instrucao_apos_2005 == -1 ~ "Não informado"
+        ), 
+        levels = c( 
+          "Fundamental incompleto", "Fundamental completo", 
+          "Médio incompleto", "Médio completo", "Superior incompleto",
+          "Superior completo", "Pós-graduação", "Doutorado", "Não informado"
+        ) 
+      )
+    )
+
+#da variáveil cbo_2002
+rais <- 
+  left_join(rais, #primeira tabela
+          cbo, #segunda tabela
+          by = c("cbo_2002" = "CODIGO")) %>% 
+  mutate(cbo_2002 = TITULO) %>% #substituindo 
+  select(!TITULO)
+          
+#da variáveil raca_cor
+rais <- 
+  left_join(rais, #primeira tabela
+          dic %>% #segunda tabela
+            filter(nome_coluna == "raca_cor") %>% 
+            select(c("chave", "valor")),
+          by = c("raca_cor" = "chave")) %>% 
+  mutate(raca_cor = valor) %>% #substituindo raca_Cor
+  select(!valor)
+
+#da variável tabela rais com a tabela subclasses
+# e excluindo a coluna cnae_2_subclasse
+rais <- 
+  left_join(
+    rais, #primeira tabela
+    subclasses, #segunda tabela
+    by = c("cnae_2_subclasse" = "subclasse"),
+    keep = T) %>% 
+  select(!cnae_2_subclasse)
+
+
+
+```
+
+```{r funcoes, include=FALSE, results='hide'}
+
+manipulacao <- function(dataset, nivel1, nivel2){
+  lvls_ano = c(2010, 2011, 2012, 2031, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+  dataset %>% 
+  group_by({{nivel1}}, {{nivel2}}, ano) %>% # agrupamento
+  summarise(n = n(), .groups = "drop") %>% #sumarização
+  mutate({{nivel2}} := forcats::fct_reorder({{nivel2}}, n)) %>% # reordenamento de níveis
+  arrange(desc(n)) %>% #ordenamento em ordem decrescente
+  filter(!is.na({{nivel2}})) 
+}
+
+grafico <- function(dataset, nivel1, nivel2, titulo){
+
+nivel1 <- enquo(nivel1)
+nivel2 <- enquo(nivel2)
+
+dataset %>% 
+ggplot(
+    aes(
+      x = ano, 
+      y = n, 
+      group = {{nivel2}},
+      color = {{nivel2}}
+      )
+  ) +
+  geom_line(
+      aes(color = {{nivel2}}),
+      size = 2
+    ) +
+  geom_point(
+      data = dataset %>% filter(ano %in% c(2010, 2020)),
+      color = "black", 
+      size = 3
+    ) +
+    geom_point(
+      data = dataset %>% group_by({{nivel1}}, {{nivel2}}) %>% filter(n == max(n)),
+      aes(x = ano, y = n),
+      color = "red",
+      size = 3
+    ) +
+  labs(
+        y = "Número de vínculos",
+        caption = "Fonte: Observatório Portuário - Dados da RAIS",
+        x = "Ano" 
+        ) +
+  # geom_text_repel(
+  #     data = dataset %>% group_by({{nivel1}}) %>% filter(n == max(n)),
+  #     aes(
+  #       x = ano, y = n,
+  #       label = scales::number(
+  #         n,
+  #         #scale = 1/10^3,
+  #         #accuracy = 0.01,
+  #         #suffix = " mil",
+  #         #decimal.mark = ",",
+  #         big.mark = ".")
+  #       ),
+  #     size = 5
+  #   ) +
+  geom_text_repel(
+      data = dataset %>% filter(ano %in% c(2010, 2020)),
+      aes(
+        label = scales::number(
+          n,
+          #scale = 1/10^3,
+          #accuracy = 0.01,
+          #suffix = " mil",
+          #decimal.mark = ",",
+          big.mark = ".")
+        ),
+      size = 5
+    ) +
+  labs(
+        y = "Número de vínculos",
+        caption = "Fonte: Observatório Portuário - Dados da RAIS",
+        x = "Ano" 
+        ) +
+  ggtitle(label = {{titulo}}) +
+  facet_wrap(vars({{nivel1}}), ncol = 2, scales = "fixed") +
+  #theme_classic() +
+  theme(
+      plot.title = element_text(size = 16L, face = "bold"),
+      plot.caption = element_text(size = 12L,face = "bold", hjust = 0), 
+      axis.title.y = element_text(size = 14L, face = "bold"), 
+      axis.title.x = element_text(size = 14L, face = "bold"),
+      axis.text.x = element_text(size = 12L, face = "bold"),
+      axis.text.y = element_text(size = 12L, face = "bold"),
+      legend.text = element_text(size = 14L),
+      panel.grid.major.x  = element_line(color = "black", linetype = "dotted", size = 0.1),
+    panel.grid.major.y  = element_line(color = "black", linetype = "dotted", size = 0.1),
+      legend.position = "top",
+      legend.justification = c("left", "top"),
+      legend.title = element_text(size = 16L, face = "bold")
+  )
+
+
+}
+```

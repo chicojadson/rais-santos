@@ -1,11 +1,74 @@
 ---
 title: "rais-santos"
+format:
+  html:
+    toc: true
+    number-sections: true
+    highlight-style: github
 ---
 
-## Quarto
+## Introdução 
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+O setor portuário brasileiro impacta direta e indiretamente os destinos e a economia do país. 
 
-```{r}
-1 + 1
-```
+O Observatório Portuário apresenta neste relatório uma síntese da evolução do Trabalho Portuário e Aguaviário nos municípios de Santos, Guarujá e Cubatão. 
+
+Trata-se de um setor abrangente e com atividades diversas como instalações portuárias, embarcações mercantes, de passageiros, pesca, atividades em plataformas marítimas e de repação naval. 
+
+Como se trata de uma ampla gama de atividades, o relatório estará organizado em duas seções com focos direcionados: a primeira com um panorama abarcado pelo Trabalho Portuário e Aguaviário e a segunda com um recorte específico sobre a operação e gestão portuária. 
+
+## Metodologia 
+
+Este relatório analisa dados da **Relação Anual de Informações Sociais (RAIS)** – registro administrativo obrigatório enviado anualmente por organizações públicas e privadas ao Ministério da Economia. A RAIS cobre estabelecimentos formais e permite acompanhar o estoque de vínculos empregatícios, incluindo tanto servidores estatutários quanto trabalhadores celetistas.
+
+A análise adota uma **perspectiva longitudinal**, cobrindo o período de **2020 a 2024**, com foco no **setor portuário do estado de São Paulo**. Foram selecionados três municípios da **Região Metropolitana da Baixada Santista** – **Santos, Cubatão e Guarujá** – devido à sua relevância econômica e à concentração de atividades portuárias na região.
+
+O recorte setorial foi realizado com base na **Classificação Nacional de Atividades Econômicas (CNAE 2.0)**, adotada oficialmente pelo Sistema Estatístico Nacional. A CNAE organiza as atividades em cinco níveis hierárquicos – Seções, Divisões, Grupos, Classes e Subclasses –, permitindo identificar com precisão os segmentos relacionados ao **transporte aquaviário e às atividades portuárias auxiliares**.
+
+A seleção das subclasses CNAE considerou especificamente as atividades de transporte marítimo, navegação interior, apoio portuário, gestão de terminais e demais serviços auxiliares, conforme detalhado abaixo:
+
+-   **H - TRANSPORTE, ARMAZENAGEM E CORREIO**
+    -   **50 - TRANSPORTE AQUAVIÁRIO**
+        -   **50.1 - Transporte marítimo de cabotagem e longo curso**
+            -   **50.11-4 - Transporte marítimo de cabotagem**
+                -   **5011-4/01**: Transporte marítimo de cabotagem - carga
+                -   **5011-4/02**: Transporte marítimo de cabotagem - passageiros
+            -   **50.12-2 - Transporte marítimo de longo curso**
+                -   **5012-2/01**: Transporte marítimo de longo curso - carga
+                -   **5012-2/02**: Transporte marítimo de longo curso - passageiros
+        -   **50.2 - Transporte por navegação interior**
+            -   **50.21-1 - Transporte por navegação interior de carga**
+                -   **5021-1/01**: Transporte por navegação interior de carga, municipal, exceto travessia
+                -   **5021-1/02**: Transporte por navegação interior de carga, intermunicipal, interestadual e internacional, exceto travessia
+            -   **50.22-0 - Transporte por navegação interior de passageiros em linhas regulares**
+                -   **5022-0/01**: Transporte por navegação interior de passageiros em linhas regulares, municipal, exceto travessia
+                -   **5022-0/02**: Transporte por navegação interior de passageiros em linhas regulares, intermunicipal, interestadual e internacional, exceto travessia
+        -   **50.3 - Navegação de apoio**
+            -   **50.30-1 - Navegação de apoio**
+                -   **5030-1/01**: Navegação de apoio marítimo
+                -   **5030-1/02**: Navegação de apoio portuário
+                -   **5030-1/03**: Serviço de rebocadores e empurradores
+        -   **50.9 - Outros transportes aquaviários**
+            -   **50.91-2 - Transporte por navegação de travessia**
+                -   **5091-2/01**: Transporte por navegação de travessia, municipal
+                -   **5091-2/02**: Transporte por navegação de travessia intermunicipal, interestadual e internacional
+            -   **50.99-8 - Transportes aquaviários não especificados anteriormente**
+                -   **5099-8/01**: Transporte aquaviário para passeios turísticos
+                -   **5099-8/99**: Outros transportes aquaviários não especificados anteriormente
+    -   **52 - ARMAZENAMENTO E ATIVIDADES AUXILIARES DOS TRANSPORTES**
+        -   **52.3 - Atividades auxiliares dos transportes aquaviários**
+            -   **52.31-1 - Gestão de portos e terminais**
+                -   **5231-1/01**: Administração da infraestrutura portuária
+                -   **5231-1/02**: Atividades do operador portuário
+                -   **5231-1/03**: Gestão de terminais aquaviários
+            -   **52.32-0 - Atividades de agenciamento marítimo**
+                -   **5232-0/00**: Atividades de agenciamento marítimo
+            -   **52.39-7 - Atividades auxiliares dos transportes aquaviários não especificadas anteriormente**
+                -   **5239-7/01**: Serviços de praticagem
+                -   **5239-7/99**: Atividades auxiliares dos transportes aquaviários não especificadas anteriormente
+
+Foram incluídos apenas vínculos **ativos em 31 de dezembro de cada ano** (`vinculo_ativo_3112 = 1`), localizados nos municípios selecionados e pertencentes às subclasses do CNAE mencionadas. Esse critério garantiu que a amostra refletisse o **mercado de trabalho formal vigente** durante o período analisado.
+
+As variáveis consideradas incluíram informações sobre ano de referência, tipo de vínculo, tipo de admissão, faixa de tempo de emprego, tempo de emprego, faixa de horas contratadas, quantidade de horas, indicadores de trabalho parcial e intermitente, faixa de remuneração média em salários mínimos e valor da remuneração média. Adicionalmente, foram analisadas características sociodemográficas dos trabalhadores, como idade, sexo, raça/cor, nacionalidade e grau de instrução, bem como informações sobre o estabelecimento, incluindo tipo, tamanho, natureza jurídica e adesão ao Simples Nacional.
+
+Essa abordagem metodológica permitiu obter uma **visão detalhada e comparativa do setor privado**, considerando diferenças entre municípios, setores econômicos e perfis dos trabalhadores.
