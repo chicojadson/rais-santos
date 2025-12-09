@@ -1,0 +1,212 @@
+---
+title: "Mercado de Trabalho no Setor Portuário"
+subtitle: "Uma análise comparativa entre Santos, Cubatão e Guarujá"
+author: "Observatório Portuário"
+
+output:
+  word_document:
+    reference_docx: word_model.docx
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_width: 6.5
+    fig_height: 4.5
+    fig_caption: true
+    highlight: "kate"
+    keep_md: false
+---
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+pacman::p_load("basedosdados", "tidyverse", 
+               "dbplyr", "scales", "kableExtra", "ggrepel")
+
+# install.packages('devtools')
+# devtools::install_github('bbc/bbplot')
+library(bbplot)
+library(kableExtra)
+
+
+
+#lendo os dados da rais
+rais <- read_csv(file = "dados/rais.csv",
+                 col_type = list(.default = "f",
+                                 valor_remuneracao_media = "d",
+                                 ano = "i"))
+```
+
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+#| label: fig-grafico_municipio
+#| fig-cap: "Meu Gráfico"
+#| fig-width: 14
+#| fig-height: 10
+#| fig-align: "center"
+
+# Preparar os dados (apenas 3 municípios)
+dados_grafico <- rais |> 
+  group_by(ano, id_municipio_nome) |> 
+  summarise(n = n(), .groups = "drop")
+
+# Verificar os municípios
+municipios <- unique(dados_grafico$id_municipio_nome)
+
+# Criar paleta de cores para 3 municípios (cores acessíveis e distintas)
+cores_municipios <- c(
+  "#1380A1",  # Azul BBC (principal)
+  "#FAAB18",  # Amarelo ouro
+  "#990000"   # Vermelho escuro
+)
+
+# Ordenar municípios pelo total de vínculos em 2024
+ordem_municipios <- dados_grafico |> 
+  filter(ano == max(ano)) |> 
+  arrange(desc(n)) |> 
+  pull(id_municipio_nome)
+
+dados_grafico <- dados_grafico |> 
+  mutate(
+    id_municipio_nome = factor(id_municipio_nome, levels = ordem_municipios),
+    # Criar rótulos formatados para tooltips
+    label_formatado = paste0(
+      id_municipio_nome, "\n",
+      format(n, big.mark = ".", decimal.mark = ","), " vínculos"
+    )
+  )
+
+# Calcular crescimento percentual 2020-2024 para cada município
+crescimento <- dados_grafico |> 
+  arrange(id_municipio_nome, ano) |> 
+  group_by(id_municipio_nome) |> 
+  summarise(
+    n_2020 = n[ano == min(ano)],
+    n_2024 = n[ano == max(ano)],
+    crescimento_pct = (n_2024 - n_2020) / n_2020 * 100
+  ) |> 
+  mutate(
+    crescimento_label = paste0(
+      ifelse(crescimento_pct >= 0, "+", ""),
+      round(crescimento_pct, 1), "%"
+    )
+  )
+
+# Criar o gráfico
+grafico_municipios <- dados_grafico |> 
+  ggplot(aes(x = ano, y = n, group = id_municipio_nome, color = id_municipio_nome)) +
+  
+  # Linhas principais - estilo BBC
+  geom_line(size = 2, alpha = 0.9, lineend = "round") +
+  
+  # Pontos em todos os anos
+  geom_point(size = 4, shape = 21, fill = "white", stroke = 1.5) +
+  
+  # Valores nos pontos (opcional - descomente se quiser)
+  geom_text(
+    aes(label = format(n, big.mark = ".", decimal.mark = ",")),
+    nudge_y = max(dados_grafico$n) * 0.03,  # 3% acima do ponto
+    size = 4,
+    fontface = "bold",
+    show.legend = FALSE
+  ) +
+  
+  # Labels no final de cada linha (2024)
+  geom_text_repel(
+    data = dados_grafico |> filter(ano == max(ano)),
+    aes(label = paste0(
+      id_municipio_nome
+    )),
+    nudge_x = 0.8,
+    direction = "y",
+    hjust = 0,
+    size = 5,
+    fontface = "bold",
+    fill = alpha("white", 0.9),
+    label.size = 0,
+    segment.color = "gray50",
+    segment.size = 0.8,
+    box.padding = 0.8,
+    family = "Helvetica"
+  ) +
+  
+  # Labels no início de cada linha (2020)
+  geom_label(
+    data = dados_grafico |> filter(ano == min(ano)),
+    aes(label = format(n, big.mark = ".", decimal.mark = ",")),
+    nudge_x = -0.3,
+    hjust = 1,
+    size = 4,
+    fontface = "bold",
+    fill = alpha("white", 0.9),
+    label.size = 0,
+    family = "Helvetica"
+  ) +
+  
+  # Títulos e labels
+  labs(
+    title = "Evolução de Vínculos Empregatícios por Município (2020-2024)",
+    # subtitle = paste("Comparativo entre", length(municipios), "municípios"),
+    x = "Ano",
+    y = "Número de vínculos",
+    color = "Município",
+    caption = paste(
+      "Fonte: RAIS - Observatório Portuário\n",
+      "Período:", min(dados_grafico$ano), "-", max(dados_grafico$ano)
+    )
+  ) +
+  
+  # Escala de cores personalizada
+  scale_color_manual(values = cores_municipios) +
+  
+  # Escala do eixo Y formatada
+  scale_y_continuous(
+    labels = function(x) format(x, big.mark = ".", decimal.mark = ","),
+    expand = expansion(mult = c(0.05, 0.15)),  # Mais espaço no topo para labels
+    breaks = scales::pretty_breaks(n = 6)
+  ) +
+  
+  # Escala do eixo X
+  scale_x_continuous(
+    breaks = seq(min(dados_grafico$ano), max(dados_grafico$ano), by = 1),
+    expand = expansion(mult = c(0.1, 0.2))  # Mais espaço à direita para labels
+  ) +
+  
+  # Aplicar tema BBC
+  bbc_style() +
+  
+  # Personalizações adicionais
+  theme(
+    plot.title = element_text(
+      size = 22, 
+      face = "bold", 
+      hjust = 0.5, 
+      margin = margin(b = 10)
+    ),
+    plot.subtitle = element_text(
+      size = 16,
+      hjust = 0.5,
+      margin = margin(b = 20)
+    ),
+    plot.caption = element_text(
+      size = 12, 
+      hjust = 0, 
+      margin = margin(t = 15)
+    ),
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    legend.position = "none",  # Removemos pois usamos labels diretas
+    plot.margin = margin(30, 60, 30, 30),  # Margens: top, right, bottom, left
+    panel.grid.major.y = element_line(color = "gray90", size = 0.5),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", size = 0.5),
+    text = element_text(family = "Helvetica")
+  ) +
+  
+  # Linha horizontal no eixo Y = 0
+  geom_hline(yintercept = 0, size = 1, color = "#333333")
+
+# Visualizar o gráfico
+print(grafico_municipios)
+
+```
+
