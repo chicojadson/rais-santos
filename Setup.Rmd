@@ -20,7 +20,6 @@ library(kableExtra)
 
 ```
 
-
 ```{r, include=FALSE, results='hide', eval=FALSE}
 
 # aqui você define o seu projeto billing_id
@@ -224,19 +223,55 @@ WHERE dados.sigla_uf = 'SP'
 
 ```
 
+q \<- "
+
+-- Testar CNAEs específicos (sem coluna cpf)
+
+SELECT
+
+cnae_2_subclasse,
+
+COUNT(\*) as total
+
+FROM \`basedosdados.br_me_rais.microdados_vinculos\`
+
+WHERE ano = 2024
+
+AND id_municipio = '3513504'
+
+AND cnae_2_subclasse IN (
+
+'5011401', '5011402', '5012201', '5012202',
+
+'5021101', '5021102', '5022001', '5022002',
+
+'5030101', '5030102', '5030103', '5091201',
+
+'5091202', '5099801', '5099899', '5231101',
+
+'5231102', '5231103', '5232000', '5239701', '5239799'
+
+)
+
+GROUP BY cnae_2_subclasse
+
+ORDER BY total DESC
+
+"
 
 ```{r, include=FALSE, results='hide', eval=FALSE}
+
+
 rais <- read_sql(query, billing_project_id = "porto-ma")
 
-# lendo o dicionário dos dados da rais da base dos dados
-dic <- read_sql(query, billing_project_id = "porto-ma")
+
 
 
 # dir.create("dados")
 
 # criando os arquivos csv
 write_csv(rais, file = "dados/rais.csv")
-write_csv(dic, file = "dados/dicionario.csv")
+
 ```
 
 ```{r importando_rais, context="data", include=FALSE}
@@ -249,8 +284,6 @@ rais <- read_csv(file = "dados/rais.csv",
 
 ```
 
-
-
 ```{r importando_arquivos, context="data", include=FALSE, eval=FALSE}
 
 #lendo os dados da rais
@@ -260,8 +293,8 @@ rais <- read_csv(file = "dados/rais.csv",
                                  ano = "i"))
 
 #lendo o dicionário dos dados da rais
-dic <- read_csv(file = "dados/dicionario.csv",
-                 col_type = list(.default = "f"))
+# dic <- read_csv(file = "dados/dicionario.csv",
+#                  col_type = list(.default = "f"))
 
 #lendo arquivo da cbo 2002
 cbo <- read_delim(file = 'dados/cbo2002.csv', delim = ";",
@@ -396,7 +429,6 @@ cbo %>% mutate(
   CODIGO = as.factor(CODIGO))
 
 ```
-
 
 ```{r funcoes, include=FALSE, results='hide'}
 
